@@ -41,7 +41,7 @@ public class Playlist
     List<Song> songs = new List<Song>();
     public void Addsong(string Title, string Artist, double Duration)
     {
-        // 🔹 Ավելացնել երգ (անվտանգ՝ Create մեթոդով)
+        // Add a song create ov 
         Song song = Song.Create(Title, Artist, Duration);
         songs.Add(song);
 
@@ -77,10 +77,6 @@ public class Playlist
         return songs.OrderByDescending(s => s.Duration).ToList();
     }
 
-
-
-    // 🔹 Դասավորել ըստ տևողության (նվազման կարգով)
-    // 
     /*public Sortby(List songs)
      {
         var Sortedbytitle = songs.OrderBy(s => s.Title).ToList() ;
@@ -136,7 +132,7 @@ public class Playlist
             Playlist.Addsong("Brat peredal", "Andy panda", 3.24);
             Playlist.Addsong("Kolibri", "Miyagi", 2.40);
 
-        //cuyc tal bolor@
+    
         Playlist.ShowAll();
 
 
@@ -165,15 +161,6 @@ public class Playlist
         double total = Playlist.TotalDuration();
             Console.WriteLine($"\nTotal amount of minutes is  {total:F2} ");
 
-            //double totalsum = TotalDuration(sum);
-            /*Console.WriteLine($"Sum duration of the playlist is,{sum}");
-
-           foreach (var song in  playlist.SortedByArtist())
-             {
-                Console.WriteLine(" {0} - {1} ",Song.Artist,song.Title);
-            }
-
-            Console.ReadKey();*/
             Console.WriteLine("\nPlease enter  any key");
             Console.ReadKey();
 
