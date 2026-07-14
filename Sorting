@@ -1,0 +1,247 @@
+using System;
+
+
+public interface ISortable
+  {
+    public void Sort(int[] arr);
+
+    public static  void Show(int[] arr )
+    { Console.WriteLine("This is your new array");
+        for (int i = 0;i< arr.Length; i++)
+        {
+            //tpum e nor tarber toxerum 
+            //Console.WriteLine($"{arr[i]}");
+            Console.Write(arr[i] + " ");
+        }
+    }
+   }
+
+
+public class BubleSort : ISortable
+{
+
+    public void Sort(int[] arr)
+    {
+    for (int j=0; j< arr.Length-1;j++)
+        for (int i = 0; i < arr.Length-1-j; i++)
+        {
+            if (arr[i] > arr[i + 1])
+            {
+                int temp = arr[i];
+                arr[i] = arr[i+1];
+                arr[i+1] = temp;
+            }
+        }
+    }
+
+}
+
+
+
+public class Insertion : ISortable
+{
+ public void Sort(int[] arr)
+    {
+   for (int i=0;i<arr.Length;i++)
+     {
+      int key=arr[i];
+      int j=i-1;
+      while(j>=0 && key<arr[j])
+     {
+       arr[j+1]= arr[j];
+       j=j-1;
+       arr[j+1]=key; 
+
+     }
+    }
+    }
+}
+
+
+
+
+public class Selection : ISortable
+{
+    
+public void Sort(int[] arr)
+{
+
+for (int i=0;i<arr.Length;i++){
+  int MinIndex= i;
+
+  for (int j=i+1;j<arr.Length;j++){
+    if (arr[j]<arr[MinIndex])
+     MinIndex = j;
+  
+}
+    int temp=arr[i];
+    arr[i]=arr[MinIndex];
+     arr[MinIndex]=temp;
+}
+
+}
+}
+
+
+public class Merge : ISortable
+{
+    public void Sort(int[] arr)
+    {
+   if ( arr.Length <= 1)
+    return;
+   
+    int mid = arr.Length / 2; 
+    int[] arr1 = new int[mid];
+    int[] arr2= new int[arr.Length - mid];
+
+     for (int i = 0; i < mid; i++)
+       {
+       arr1[i] = arr[i];
+       }       
+     for (int i = mid; i < arr.Length; i++)
+     {
+      arr2[i - mid] = arr[i];
+     }
+         
+        Sort(arr1);
+        Sort(arr2);
+
+        MergeArrays(arr, arr1, arr2);
+    }
+
+    private void MergeArrays(int[] arr, int[] arr1, int[] arr2)
+    {
+        int i = 0; // index for arr1
+        int j = 0; // index for arr2
+        int k = 0; // index for arr
+
+        while (i < arr1.Length && j < arr2.Length)
+        {
+            if (arr1[i] <= arr2[j])
+                arr[k++] = arr1[i++];
+            else
+                arr[k++] = arr2[j++];
+        }
+
+        while (i < arr1.Length)
+            arr[k++] = arr1[i++];
+
+        while (j < arr2.Length)
+            arr[k++] = arr2[j++];
+    }
+}
+
+public class QuickSort :ISortable
+ {
+public void Sort(int [] arr)
+ {
+   Sort(arr,0,arr.Length-1);
+
+ }
+ public void Sort(int [] arr,int low, int high)
+ {
+	 //karevor
+	 if (low>=high)
+		 return;
+       // int LastIndex= arr.Length-1;
+       //int pivot= arr[LastIndex];
+	   //int i=-1;
+	 
+	 int pivot= arr[high];
+	 int i=low-1;
+	 
+    for (int j = low; j < high; j++)
+     {
+       if (arr[j]<=pivot)
+       { 
+        i++;
+         int temp=arr[i];
+         arr[i]=arr[j];
+         arr[j]=temp;
+       }
+     }
+    int temp1=arr[i+1];
+    arr[i+1]=arr[high];
+    arr[high]=temp1;
+
+     int PivotIndex=i+1;
+     Sort(arr,low,PivotIndex-1);
+     Sort(arr,PivotIndex+1,high);
+    }
+ }
+
+
+
+public class Average : ISortable
+{
+public void Sort(int [] arr)
+    {
+	int sum=0,n=arr.Length;
+      for (int i = 0; i < arr.Length; i++)
+        {
+          sum += arr[i];
+        }     
+      int plan = sum/n;
+      for(int i=0; i < arr.Length;i++)
+        {
+            arr[i]=plan;
+        }
+    }
+}
+
+
+
+class Program
+{
+
+    public  static void Main(string[] args)
+    {
+       int[] arr = { 1, 2, 3 ,4};
+        BubleSort sort = new BubleSort();
+        sort.Sort(arr);
+        ISortable.Show(arr);
+
+    
+        int [] arr1={1,9,5,-2,0};
+        Insertion sort1= new Insertion();
+        sort1.Sort(arr1);
+        Console.WriteLine("\n");
+        ISortable.Show(arr1);
+
+         int [] arr2 = {0,5,-2,12,32,9};
+         Selection sort2= new Selection();
+         sort2.Sort(arr2);
+         Console.WriteLine("\n");
+         ISortable.Show(arr2);
+
+         int [] arr3 = {0,5,-2,12,32,9};
+         Merge sort3= new Merge();
+         sort3.Sort(arr3);
+         Console.WriteLine("\n");
+         ISortable.Show(arr3);
+
+
+         int [] arr4= {8,3,2,9,1,7,6,10,4,5};
+         QuickSort sort4= new QuickSort();
+         sort4.Sort(arr4);
+         Console.WriteLine("\n");
+         ISortable.Show(arr4);
+
+
+         int [] arr5 = {0,5,-2,12,32,9};
+         Average sort5= new Average();
+         sort5.Sort(arr5);
+         Console.WriteLine("\n you array has been communisted");
+         ISortable.Show(arr5);
+
+
+        Console.ReadKey();
+
+    }
+
+
+}
+
+
+
+
