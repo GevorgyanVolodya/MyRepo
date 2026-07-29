@@ -1,0 +1,148 @@
+using System;
+using Telegram.Bot;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Telegram.Bot.Polling;
+using System.Threading;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
+using System.ComponentModel.Design;
+using System.Text.Json;
+using System.IO;
+
+namespace Telegrambot
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+
+            //avelacnel stickerner 
+            LoadSticker();
+            var client = new TelegramBotClient("Enter your API ");
+            client.StartReceiving(Update, Error);
+
+           //Console.WriteLine("Hello world");
+            Console.ReadLine();
+ 
+
+        }
+
+        private static async Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
+        {
+            var message = update.Message;
+            if (message.Text != null)
+            {
+
+                Console.WriteLine($"{message.Chat.Username ?? "Anonimous user"} || {message.Text} ");
+
+                //karox einq nayev ayspes grel 
+                //if massage.Text.ToLower == "Barev"
+                if (message.Text.ToLower().Contains("barev"))
+                {
+                    //pordxel Text message send funkvian grel
+                    await botClient.SendMessage(message.Chat.Id, "Hazar Barin");
+                    return;
+                }
+
+
+                var text = message.Text.ToLower().Trim();
+
+               //stanum enq sticker, yuraqanchyuri FileId-ov 
+                if (StickDict != null && StickDict.TryGetValue(text, out string stickerFileId))
+                {
+                    await botClient.SendSticker(
+                    chatId: message.Chat.Id,
+                     sticker: new InputFileId(stickerFileId)
+                     );
+                    return;
+                }
+
+
+                if (message.Text.ToLower().Trim().Contains("/menu"))
+                {
+                    var menuList = new List<KeyboardButton>{
+                    new KeyboardButton("Button N1"),
+                    new KeyboardButton("Button N2"),
+                    new KeyboardButton("Button N3")
+
+                    };
+
+                    var Keyboard = new ReplyKeyboardMarkup(new[]
+
+                    {
+                        //kochakneri texavorum mi toxi vra
+                        //menuList.ToArray()})
+
+                        //yuraqanchyur toxi hamar arandzin Array
+                        new [] {menuList[0], menuList [1]},
+                        new [] {menuList[2] }
+
+                        })
+                    {
+                        ResizeKeyboard= true,
+                        OneTimeKeyboard= false   
+                    };
+
+                    await botClient.SendMessage(
+                        chatId: message.Chat.Id,
+                        text: "Choose the button",
+                        replyMarkup: Keyboard
+                        );
+                    return;
+
+                }
+
+
+
+            }
+
+                if (message.Photo != null)
+                {
+
+                    await botClient.SendMessage(message.Chat.Id, "lav nkar e bayc uxarkir pdf formatov ");
+                    return;
+
+                }
+                //throw new NotImplementedException();otClient,Update update)
+  
+        }
+
+
+
+     private static Dictionary<string, string> StickDict;
+
+        public static void LoadSticker() 
+        
+        {
+            string jsonPath = "sticker.json";
+
+
+            if (File.Exists(jsonPath))
+            {
+                string jsonString = File.ReadAllText(jsonPath);
+                StickDict = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonString);
+                Console.WriteLine("{0} stickers  were added", StickDict.Count);
+
+
+            }
+            else
+            {   //
+                StickDict = new Dictionary<string, string>();
+                Console.WriteLine("sticker.json file is not foud ");
+
+            }
+                
+        }
+       
+        private static async Task Error(ITelegramBotClient client, Exception exception, HandleErrorSource source, CancellationToken token)
+        {
+            Console.WriteLine($" Error ` {exception.Message}");
+            return;//Task.CompletedTask;
+        }
+    }
+
+}
+
