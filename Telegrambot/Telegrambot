@@ -11,11 +11,47 @@ using Telegram.Bot.Types.ReplyMarkups;
 using System.ComponentModel.Design;
 using System.Text.Json;
 using System.IO;
+using System.CodeDom.Compiler;
+using Telegram.Bot.Types.Enums;
+using System.Web;
+using System.Runtime.InteropServices;
 
 namespace Telegrambot
 {
     internal class Program
     {
+
+ static Dictionary<long, BotState> UserState = new Dictionary<long, BotState>();
+
+ static Dictionary<long, string> StickerName = new Dictionary<long, string>();
+
+ private static Dictionary<string, string> StickDict;
+
+ static string jsonPath = @"Write your path ";
+
+
+ enum BotState
+ {
+     Null,
+     WaitsForName,
+     WaitsForSticker,
+     SearchesSticker
+
+ }
+
+ private static void AddToJson(string name , string fileId)
+ {
+     //aystex yuraqanchyur (name) arjeqi hamapatasxan pahpanvum e (fileId)
+
+     Console.WriteLine($"DEBUG avelacnenq {name} anunov sticker@ ");
+     StickDict[name] = fileId;
+     
+
+    string json= JsonSerializer.Serialize(StickDict,new JsonSerializerOptions { WriteIndented = true });
+     File.WriteAllText(jsonPath, json);
+     Console.WriteLine("DEBUG file was added ");
+  }
+
         static void Main(string[] args)
         {
 
@@ -33,10 +69,60 @@ namespace Telegrambot
         private static async Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
         {
             var message = update.Message;
+            var chatId = message.Chat.Id;
+
+
+    // chtexadrel ayspisi stugumner skzbum ,qani vor stcike@ vorpes object e
+    //  ev uxarkvum e update vortex ete text@ null e apa sxal e talis 
+    //var text = message.Text.ToLower().Trim();
+    //katerel havelyal stugum ete sticker e
+
+
+    //long == chat.ID for every user
+    //pahum e  yuraqanchyur user i ID-n 
+
+
+
+
+
+  if (UserState.ContainsKey(chatId) && UserState[chatId] == BotState.WaitsForName)
+ {
+      //pahpanum enq nermucvac text@ vorpes jamanakavor  stickeri anun
+      //apa poxum enq boti vichak@ depi Waitsforsticker(spasum e stickeri) 
+       
+   StickerName[chatId] = message.Text.Trim().ToLower();
+   UserState[chatId] = BotState.WaitsForSticker;
+
+   await botClient.SendMessage(chatId, "Enter your new  sticker ");
+    return;
+ }
+
+ if (UserState.ContainsKey(chatId) && UserState[chatId] == BotState.WaitsForSticker)
+  {
+      if (message.Sticker != null)
+      {
+        
+          string stickerid = update.Message.Sticker.FileId;
+          string name = StickerName[chatId];
+          //avelacnum enq fayli mej vorpes ` anun + fileID
+          AddToJson(name, stickerid);
+
+
+          //vardarcnum enq bot@ naxkin vickakin (null)
+          //jnjum enq sticker@  tvyal chatic 
+          UserState[chatId] = BotState.Null;
+          StickerName.Remove(chatId);
+          await botClient.SendMessage(chatId,$"Youre sticker was added <<{name}>>");
+      }
+      return;
+  }
+
+
             if (message.Text != null)
             {
-
-                Console.WriteLine($"{message.Chat.Username ?? "Anonimous user"} || {message.Text} ");
+                var text = message.Text.ToLower().Trim();
+                  Console.WriteLine($"{message.Chat.Username ?? message.Chat.FirstName +  message.Chat.LastName} || {message.Text} ");
+                //Console.WriteLine($"{message.Chat.Username ?? "Anonimous user"} || {message.Text} ");
 
                 //karox einq nayev ayspes grel 
                 //if massage.Text.ToLower == "Barev"
@@ -47,25 +133,75 @@ namespace Telegrambot
                     return;
                 }
 
+           if (text.Contains("add sticker"))
+              {
+  
+               UserState[chatId] = BotState.WaitsForName;
+               await botClient.SendMessage(chatId, "Enter the name for your new sticker ");
 
-                var text = message.Text.ToLower().Trim();
+               }
+
+
+
+
+            if (text.Contains("find sticker")) 
+            {
+             UserState[chatId] = BotState.SearchesSticker;
+              await botClient.SendMessage(chatId, "Please enter the name if the sticker you want to find ");
+              return;
+             //ete return chlini kashxati if ic heto else block@ 
+             }
+
+         if (UserState.ContainsKey(chatId) && UserState[chatId] == BotState.SearchesSticker)
+            {
+             //await botClient.SendMessage(chatId, "Please enter the name for finding stickers");
+              string request = text.Trim().ToLower();
+              var matched = StickDict.Keys.Where(k => k.Contains(request)).ToList();
+
+
+              if (matched.Count > 0)
+               { 
+               string result = string.Join(",", matched.Select(k =>k));
+               await botClient.SendMessage(
+               chatId: chatId,
+               text: $"We have found {matched.Count} sticker(s)` \n {result} ",
+               //Markdown tarberak@ karoxanum e darcbel text@ tav(**"text"**) dzevov
+               parseMode: ParseMode.Html
+               );
+
+                }
+
+             else 
+             {
+              await botClient.SendMessage(
+              chatId: chatId,
+              text : $"We havent found sticker by the  name {request} "
+
+              );
+             }
+              UserState[chatId]= BotState.Null;
+               return;
+  
+             }
+
+
+
 
                //stanum enq sticker, yuraqanchyuri FileId-ov 
                 if (StickDict != null && StickDict.TryGetValue(text, out string stickerFileId))
                 {
-                    await botClient.SendSticker(
+                    await botClient.SendSticker  (
                     chatId: message.Chat.Id,
-                     sticker: new InputFileId(stickerFileId)
-                     );
+                     sticker: new InputFileId(stickerFileId) );
                     return;
                 }
 
 
-                if (message.Text.ToLower().Trim().Contains("/menu"))
+                if (text.Contains("/menu"))
                 {
                     var menuList = new List<KeyboardButton>{
-                    new KeyboardButton("Button N1"),
-                    new KeyboardButton("Button N2"),
+                    new KeyboardButton("Add sticker"),
+                    new KeyboardButton("Find sticker"),
                     new KeyboardButton("Button N3")
 
                     };
@@ -82,15 +218,16 @@ namespace Telegrambot
 
                         })
                     {
+                        //ResizeKeyboard  poxakerpum e @st anhrajeshtutyan
+                        //OneTimeKeyboard, kanchvac menu -n kanchum e mek angam  
                         ResizeKeyboard= true,
                         OneTimeKeyboard= false   
                     };
 
-                    await botClient.SendMessage(
+                    await botClient.SendMessage (
                         chatId: message.Chat.Id,
                         text: "Choose the button",
-                        replyMarkup: Keyboard
-                        );
+                        replyMarkup: Keyboard   );
                     return;
 
                 }
@@ -111,21 +248,16 @@ namespace Telegrambot
         }
 
 
-
-     private static Dictionary<string, string> StickDict;
-
         public static void LoadSticker() 
         
         {
-            string jsonPath = "sticker.json";
-
+        
 
             if (File.Exists(jsonPath))
-            {
+            {  // kardum e (jsonPath) ic amboxj text@
                 string jsonString = File.ReadAllText(jsonPath);
                 StickDict = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonString);
                 Console.WriteLine("{0} stickers  were added", StickDict.Count);
-
 
             }
             else
@@ -140,7 +272,8 @@ namespace Telegrambot
         private static async Task Error(ITelegramBotClient client, Exception exception, HandleErrorSource source, CancellationToken token)
         {
             Console.WriteLine($" Error ` {exception.Message}");
-            return;//Task.CompletedTask;
+            Console.WriteLine($" Error ` {exception.StackTrace}");
+          
         }
     }
 
