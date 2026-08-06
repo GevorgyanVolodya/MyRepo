@@ -58,8 +58,21 @@ namespace Telegrambot
             //avelacnel stickerner 
             LoadSticker();
             var client = new TelegramBotClient("Enter your API ");
-            client.StartReceiving(Update, Error);
 
+      var receiverOptions = new ReceiverOptions
+       {
+
+        AllowedUpdates = new UpdateType[]
+        {
+         UpdateType.Message,
+         UpdateType.InlineQuery
+
+       }
+
+
+ };
+            client.StartReceiving(Update, Error,receiverOptions);
+          
            //Console.WriteLine("Hello world");
             Console.ReadLine();
  
@@ -68,7 +81,38 @@ namespace Telegrambot
 
         private static async Task Update(ITelegramBotClient botClient, Update update, CancellationToken token)
         {
+    //katarel arajin stugum@ aystex qano vor arajanum e tramabanakan sxal 
+    //amen update i jamanak stugvum e ardyoq na uni Message, Text,Inline haxordagrutyun
+    //ete inline query e apa (message =null,inline !=null), ays depqum
+    //110.if (message == null) return;
+    //miangamic retur nov hanum e ciklic , ev vheinq hasnum himnkana Inline != 
+    //ete text e apa(message!= null, inline= null)
+    if (update.InlineQuery != null)
+    {
+        Console.WriteLine($"Debug sticker were added {StickDict.Count}");
+        string query = update.InlineQuery.Query;
+        var results = InlineMode.SendResults(
+            update.InlineQuery.Query,
+            StickDict
+            );
+
+        Console.WriteLine($"Debug stacvec ayspisi harcumner  {results.Count}");
+
+        await botClient.AnswerInlineQuery(
+        inlineQueryId: update.InlineQuery.Id,
+        results: results,
+        cacheTime: 0
+         // = 0 depqumm chi pahvi cache-um;
+         );
+
+        return;
+
+    }
             var message = update.Message;
+  if (message == null) return;
+  //partadir katrel stugum qani vor Inline Mode *um arajanume sxal
+  //Inline mode -um message= null(default), dra hamar arajanum e sxal;
+  //bayc karda 81 ic heto 
             var chatId = message.Chat.Id;
 
 
@@ -80,8 +124,6 @@ namespace Telegrambot
 
     //long == chat.ID for every user
     //pahum e  yuraqanchyur user i ID-n 
-
-
 
 
 
@@ -273,7 +315,7 @@ namespace Telegrambot
         {
             Console.WriteLine($" Error ` {exception.Message}");
             Console.WriteLine($" Error ` {exception.StackTrace}");
-          
+          return;
         }
     }
 
