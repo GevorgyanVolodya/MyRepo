@@ -1,0 +1,40 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Telegram.Bot.Types.InlineQueryResults;
+
+namespace Telegrambot
+{
+    public static class InlineMode
+    {
+
+        public static List<InlineQueryResult> SendResults(string query, Dictionary<string, string> StickDict)
+        {
+            Console.WriteLine($"Debug youre query is {query}");
+            //Console.WriteLine($"Debug dictionary keys ={string.Join(",",StickDict)}");
+            //cuyc tal bolor stickerner2 vorpes arandzin list
+            //partadir che grel key@, ayn arajarkum e henc chat-um 
+            var result = new List<InlineQueryResult>();
+            string Query = query.ToLower().Trim();
+            //pntrum enq sticker mer StickDict-ic
+           var matched =  StickDict.Where( m => m.Key.Contains(Query)).ToList();
+           foreach (var sticker in matched)
+                {
+                    //yuraqanchyur gtnvac sticker i hamar stexcum en Inline testq i patasxan
+                    //aytex id-n hamarvum e mer koxmic nshvac anun@ , isk Value arden fileId -n
+                    result.Add(new InlineQueryResultCachedSticker(
+                    id: sticker.Key,
+                    stickerFileId: sticker.Value));
+
+                }
+                return result;
+
+   
+
+        }
+
+    }
+
+}
